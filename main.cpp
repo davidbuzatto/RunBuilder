@@ -8,7 +8,8 @@ using namespace boost::filesystem;
 int main() {
 
     //path startingPath( "C:/Program Files" );
-    path startingPath( "C:/" );
+    //path startingPath( "C:/" );
+    std::vector<string> driveLetters;
 
     std::vector<path> gccPaths;
     std::vector<path> gppPaths;
@@ -24,6 +25,7 @@ int main() {
     int selectedGppPathIndex = -1;
     int selectedJavacPathIndex = -1;
     int selectedPythonPathIndex = -1;
+    int selectedDriveLetterIndex = 0;
     int current = 1;
 
     cout << "Hi student!" << endl <<
@@ -35,16 +37,50 @@ int main() {
 
             "That loader will be called run.bat" << endl <<
             "and will be created in the same" << endl <<
-            "directory in which I was executed." << endl << endl <<
+            "directory in which I'm being executed." << endl << endl <<
 
             "Let's get started! ;)" << endl << endl;
+
+
+    for ( char c = 'A'; c <= 'Z'; c++ ) {
+        string driveLetter = "";
+        driveLetter += c;
+        driveLetter += ":/";
+        if ( exists( path( driveLetter ) ) ) {
+            driveLetters.push_back( driveLetter );
+        }
+    }
+
+    if ( driveLetters.size() > 1 ) {
+
+        cout << "I found " << driveLetters.size() << " drives in your system." << endl <<
+                "which one do you want me to use?" << endl;
+
+        for ( int i = 1; i <= driveLetters.size(); i++ ) {
+            cout << "    [" << i << "]: \"" << driveLetters[i-1] << "\"" << endl;
+        }
+
+        cout << "Please, select: ";
+        cin >> selectedDriveLetterIndex;
+
+        if ( selectedDriveLetterIndex <= 0 || selectedDriveLetterIndex > driveLetters.size() ) {
+            selectedDriveLetterIndex = 0;
+        } else {
+            selectedDriveLetterIndex--;
+        }
+
+    }
+
+    path startingPath( driveLetters[selectedDriveLetterIndex] );
 
     if ( exists( startingPath ) ) {
 
         try {
             if ( is_directory( startingPath ) ) {
 
-                cout << "Looking for JJudge binary dependencies... please wait..." << endl;
+                cout << "Looking for JJudge binary dependencies in \"" <<
+                        driveLetters[selectedDriveLetterIndex] <<
+                        "\"... please wait..." << endl;
 
                 for ( directory_entry& entry : recursive_directory_iterator( startingPath, directory_options::skip_permission_denied ) ) {
 
@@ -237,11 +273,14 @@ int main() {
 
                 outfile << endl;
 
-                outfile << "START \"\" \"" << selectedJavacPath.parent_path().string().replace( 2, 1, "\\" ) << "\\javaw.exe\" -jar JJudge.jar";
+                if ( selectedJavacPathIndex != -1 ) {
+                    outfile << "START \"\" \"" << selectedJavacPath.parent_path().string().replace( 2, 1, "\\" ) << "\\javaw.exe\" -jar JJudge.jar";
+                }
 
                 outfile.close();
 
                 cout << "Done!" << endl;
+                cout << "Bye ;)" << endl;
 
                 system( "PAUSE" );
 
